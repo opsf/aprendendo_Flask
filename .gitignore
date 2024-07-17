@@ -1,0 +1,31 @@
+# Arquivos de sistema
+.DS_Store
+
+# Ambiente virtual
+venv/
+*.pyc
+
+# Arquivos de configuração local
+instance/
+
+# Logs e arquivos temporários
+logs/
+*.log
+*.swp
+
+# Pacotes Python
+*.pyc
+__pycache__/
+
+# Ambiente específico do editor
+.idea/
+.vscode/
+
+# Arquivos de dependências
+.env
+env/
+
+# Arquivos de build e distribuição
+*.egg-info/
+dist/
+build/
