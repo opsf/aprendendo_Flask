@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, session, flash, url_for
+from flask import render_template, request, redirect, session, flash, url_for, send_from_directory
 from models import Jogos, Usuarios
 from jogoteca import app, db
 
@@ -22,13 +22,45 @@ def criar():
     nome = request.form['nome']
     categoria = request.form['categoria']
     console = request.form['console']
-
-    #jogo = Jogos.query.filter_by(nome=nome).first()
-    
+       
     novo_jogo = Jogos(nome=nome, categoria=categoria, console=console)
     db.session.add(novo_jogo)
     db.session.commit()
+
+    arquivo = request.files['arquivo']
+    upload_path = app.config['UPLOAD_PATH']
+    arquivo.save(f'{upload_path}/capa{novo_jogo.id}.jpg')             
+    
+
     return redirect(url_for('index'))
+
+@app.route('/editar/<int:id>')
+def editar(id):    
+    if 'usuario_logado'  not in session or session["usuario_logado"]==None:
+        return redirect(url_for('login', proxima = url_for('editar')))
+    jogo = Jogos.query.filter_by(id=id).first()
+    return render_template('editar.html', titulo='Editando jogo', jogo=jogo)
+
+@app.route('/atualizar', methods=['POST',])
+def atualizar():
+    jogo = Jogos.query.filter_by(id=request.form['id']).first()
+    jogo.nome=request.form['nome']
+    jogo.categoria=request.form['categoria']
+    jogo.console=request.form['console']
+    db.session.add(jogo)
+    db.session.commit()
+    return redirect(url_for('index'))   
+
+@app.route('/deletar/<int:id>')
+def deletar(id):
+    if 'usuario_logado'  not in session or session["usuario_logado"]==None:
+        return redirect(url_for('index'))
+    
+    Jogos.query.filter_by(id=id).delete()
+    db.session.commit()
+
+    return redirect(url_for('index'))
+
 
 @app.route('/login')
 def login():
@@ -54,3 +86,7 @@ def logout():
     session["usuario_logado"]=None
     flash("logout efetuado com sucesso")
     return redirect(url_for('index'))
+
+@app.route('/uploads/<nome_arquivo>')
+def imagem(nome_arquivo):
+    return send_from_directory('uploads', nome_arquivo)
